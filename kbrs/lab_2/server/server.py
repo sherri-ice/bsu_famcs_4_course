@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify
 
 from datastore import DataStore
 
@@ -13,11 +13,14 @@ def home():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    username, password = request.args.get('username'), request.args.get('password')
+    username = request.args.get('username')
+    password = request.args.get('password')
+    e = int(request.args.get('pub_key_e'))
+    p = int(request.args.get('pub_key_p'))
     if not db.validate_credentials(username, password):
         return jsonify(data={'message': 'Not registered'}), 401
     try:
-        session_token = db.start_session(username)
+        session_token = db.start_session(username, (e, p))
     except ValueError as ex:
         return jsonify({'message': str(ex)}), 401
     response_data = {"message": "Authenticated", 'session_token': session_token}
