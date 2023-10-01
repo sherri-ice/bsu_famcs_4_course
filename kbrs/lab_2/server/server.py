@@ -13,10 +13,11 @@ def home():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    username = request.args.get('username')
-    password = request.args.get('password')
-    e = int(request.args.get('pub_key_e'))
-    p = int(request.args.get('pub_key_p'))
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    e = int(data.get('pub_key_e'))
+    p = int(data.get('pub_key_p'))
     if not db.validate_credentials(username, password):
         return jsonify(data={'message': 'Not registered'}), 401
     try:
@@ -29,8 +30,10 @@ def login():
 
 @app.route('/api/get_file_content', methods=['GET'])
 def get_file_content():
-    session_token = request.args.get('session_token')
-    file_name = request.args.get('file_name')
+    data = request.get_json()
+
+    session_token = data.get('session_token')
+    file_name = data.get('file_name')
 
     response = {
         "file_name": file_name,
@@ -41,7 +44,7 @@ def get_file_content():
 
 @app.route('/api/get_all_files', methods=['GET'])
 def get_all_files():
-    session_token = request.args.get('session_token')
+    session_token = request.get_json().get('session_token')
     response = {
         "all_files_names": db.get_all_files(session_token=session_token)
     }
@@ -50,9 +53,11 @@ def get_all_files():
 
 @app.route('/api/load_file', methods=['POST'])
 def load_file():
-    session_token = request.args.get('session_token')
-    file_name = request.args.get('file_name')
-    file_content = request.args.get('file_content')
+    data = request.get_json()
+
+    session_token = data.get('session_token')
+    file_name = data.get('file_name')
+    file_content = data.get('file_content')
     try:
         db.put_file(session_token=session_token, file_name=file_name, file_content=file_content)
     except ValueError as ex:
@@ -65,9 +70,10 @@ def load_file():
 
 @app.route('/api/edit_file', methods=['PATCH'])
 def edit_file():
-    session_token = request.args.get('session_token')
-    file_name = request.args.get('file_name')
-    file_content = request.args.get('new_file_content')
+    data = request.get_json()
+    session_token = data.get('session_token')
+    file_name = data.get('file_name')
+    file_content = data.get('new_file_content')
     try:
         db.edit_file(session_token=session_token, file_name=file_name, new_file_content=file_content)
     except ValueError as ex:
@@ -80,8 +86,9 @@ def edit_file():
 
 @app.route('/api/delete_file', methods=['DELETE'])
 def delete_file():
-    session_token = request.args.get('session_token')
-    file_name = request.args.get('file_name')
+    data = request.get_json()
+    session_token = data.get('session_token')
+    file_name = data.get('file_name')
     try:
         db.delete_file(session_token=session_token, file_name=file_name)
     except ValueError as ex:
