@@ -1,3 +1,4 @@
+import crypto.aes
 from crypto.utils import get_session_key
 from crypto.consts import AES_KEY_LENGTH
 from crypto.rsa import encrypt as encrypt_rsa
@@ -61,10 +62,14 @@ class DataStore:
     def edit_file(self, session_token: str, file_name, new_file_content: str):
         if file_name not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, use add_file function")
-        self.__text_store__[file_name] = new_file_content
+
+        self.__text_store__[file_name] = ''.join(crypto.aes.decrypt(new_file_content,session_token))
 
     @__require_session__
     def delete_file(self, session_token: str, file_name):
         if file_name not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, nothing to delete")
-        del self.__text_store__[file_name]
+
+        file_name_decrypted = ''.join(crypto.aes.decrypt(file_name, session_token))
+
+        del self.__text_store__[file_name_decrypted]

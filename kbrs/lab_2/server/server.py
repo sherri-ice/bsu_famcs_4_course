@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
 
+import crypto.rsa
 from datastore import DataStore
+from crypto.utils import RsaKeys
 
 app = Flask(__name__)
 db = DataStore()
+pub, priv = crypto.rsa.generate_keypair(71, 101)
+server_keys = RsaKeys(public=pub, private=priv)
 
 
 @app.route('/')
@@ -11,17 +15,21 @@ def home():
     return "Hello, World!"
 
 
+@app.route('/api/get_public_key', methods=['GET'])
+def get_rsa_public_key():
+    return jsonify({"message": "OK", "server_public_key": server_keys.public})
+
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    e = int(data.get('pub_key_e'))
-    p = int(data.get('pub_key_p'))
+    client_public_key = data.get('public_key')
+    username = crypto.rsa.decrypt(server_keys.private, data.get('username'))
+    password = crypto.rsa.decrypt(server_keys.private, data.get('password'))
     if not db.validate_credentials(username, password):
         return jsonify(data={'message': 'Not registered'}), 401
     try:
-        session_token = db.start_session(username, (e, p))
+        session_token = db.start_session(username, client_public_key)
     except ValueError as ex:
         return jsonify({'message': str(ex)}), 401
     response_data = {"message": "Authenticated", 'session_token': session_token}
@@ -32,7 +40,7 @@ def login():
 def get_file_content():
     data = request.get_json()
 
-    session_token = data.get('session_token')
+    session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
 
     response = {
@@ -44,22 +52,21 @@ def get_file_content():
 
 @app.route('/api/get_all_files', methods=['GET'])
 def get_all_files():
-    session_token = request.get_json().get('session_token')
+    session_token = crypto.rsa.decrypt(server_keys.private, request.get_json().get('session_token'))
     response = {
         "all_files_names": db.get_all_files(session_token=session_token)
     }
     return jsonify(response)
 
 
-@app.route('/api/load_file', methods=['POST'])
+@app.route('/api/new_file', methods=['POST'])
 def load_file():
     data = request.get_json()
 
-    session_token = data.get('session_token')
+    session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
-    file_content = data.get('file_content')
     try:
-        db.put_file(session_token=session_token, file_name=file_name, file_content=file_content)
+        db.put_file(session_token=session_token, file_name=file_name, file_content='')
     except ValueError as ex:
         return jsonify({'message': str(ex)}), 401
     response = {
@@ -71,7 +78,7 @@ def load_file():
 @app.route('/api/edit_file', methods=['PATCH'])
 def edit_file():
     data = request.get_json()
-    session_token = data.get('session_token')
+    session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
     file_content = data.get('new_file_content')
     try:
@@ -87,7 +94,7 @@ def edit_file():
 @app.route('/api/delete_file', methods=['DELETE'])
 def delete_file():
     data = request.get_json()
-    session_token = data.get('session_token')
+    session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
     try:
         db.delete_file(session_token=session_token, file_name=file_name)

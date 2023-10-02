@@ -1,5 +1,12 @@
 import random
 from .consts import ALPHABET
+from dataclasses import dataclass
+
+
+@dataclass
+class RsaKeys:
+    public: tuple[int, int]
+    private: tuple[int, int]
 
 
 def get_session_key(length):

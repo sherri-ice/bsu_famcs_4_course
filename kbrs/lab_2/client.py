@@ -1,21 +1,29 @@
 import tkinter as tk
-from tkinter import filedialog
-import requests
 from dataclasses import dataclass
+
+import requests
+
+import crypto.aes
+import crypto.rsa
+from crypto.utils import RsaKeys
 
 
 @dataclass
 class ApplicationState:
     all_files_list: list[str]
-    session_token: list[int]
+    session_token: str  # stores non encrypted session token for aes
 
 
 if __name__ == '__main__':
-    app = ApplicationState(all_files_list=[], session_token=[])
+    app = ApplicationState(all_files_list=[], session_token='')
+    pub, priv = crypto.rsa.generate_keypair(73, 103)
+    client_keys = RsaKeys(public=pub, private=priv)
+    server_public_key: tuple[int, int]
 
 
     def update_file_list():
-        req = requests.get('http://127.0.0.1:5000/api/login', json={'session_token': app.session_token[0]})
+        req = requests.get('http://127.0.0.1:5000/api/get_all_files',
+                           json={'session_token': crypto.rsa.encrypt(server_public_key, app.session_token)})
         app.all_files_list = req.json()["all_files_names"]
         file_listbox.delete(0, tk.END)
         for name in app.all_files_list:
@@ -23,16 +31,25 @@ if __name__ == '__main__':
 
 
     def save_file():
-        filepath = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
-        if filepath:
-            with open(filepath, 'w') as file:
-                file.write(text.get('1.0', tk.END))
+        if file_listbox.curselection():
+            selected_index = file_listbox.curselection()[0]
+            file_name = app.all_files_list[selected_index]
+            file_content = text.get("1.0", tk.END)
+            text_bytes = bytes(file_content, 'UTF-8')
+            encrypted_text = crypto.aes.encrypt(text_bytes, app.session_token)
+            payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
+                       'file_name': file_name,
+                       'file_content': encrypted_text}
+            requests.post('http://127.0.0.1:5000/api/edit_file', json=payload)
 
 
     def new_file():
         file_name = input_field.get()
-        payload = {'session_token': app.session_token[0], 'file_name': file_name, 'file_content': ''}
-        res = requests.post('http://127.0.0.1:5000/api/load_file', json=payload)
+        if file_name == '':
+            print("Empty name!")
+            return
+        payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token), 'file_name': file_name}
+        res = requests.post('http://127.0.0.1:5000/api/new_file', json=payload)
         if res:
             update_file_list()
 
@@ -40,19 +57,28 @@ if __name__ == '__main__':
     def delete_file():
         if file_listbox.curselection():
             selected_index = file_listbox.curselection()[0]
-            file_listbox.delete(selected_index)
-            text.delete('1.0', tk.END)
-
+            file_name = app.all_files_list[selected_index]
+            text_bytes = bytes(file_name, 'UTF-8')
+            encrypted_text = crypto.aes.encrypt(text_bytes, app.session_token)
+            payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
+                       'file_name': encrypted_text}
+            requests.post('http://127.0.0.1:5000/api/delete', json=payload)
 
     def get_file_contents(event):
         if file_listbox.curselection():
             selected_index = file_listbox.curselection()[0]
-            selected_file = file_listbox.get(selected_index)
-            text.delete('1.0', tk.END)
-            text.insert(tk.END, selected_file)
+            file_name = app.all_files_list[selected_index]
+            payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
+                       'file_name': file_name}
+            res = requests.get('http://127.0.0.1:5000/api/get_file_content', json=payload)
+            if res:
+                file_contents = crypto.aes.decrypt(res.json()["file_content"], app.session_token)
+                text.delete('1.0', tk.END)
+                text.insert(tk.END, ''.join(file_contents))
+            else:
+                return
 
 
-    # Create main window
     root = tk.Tk()
     root.title("File Manager")
 
@@ -92,12 +118,25 @@ if __name__ == '__main__':
     # Binding file selection to update text
     file_listbox.bind('<<ListboxSelect>>', get_file_contents)
 
-    res = requests.post('http://127.0.0.1:5000/api/login',
-                        json={'username': 'admin', 'password': 'admin', 'pub_key_e': '10000007',
-                              'pub_key_p': '1000007'})
+    res = requests.get('http://127.0.0.1:5000/api/get_public_key')
     if res:
-        print("connect successful")
-        app.session_token = res.json()["session_token"]
+        server_public_key = res.json()["server_public_key"]
+    else:
+        print(res.text)
+        raise ConnectionError('Server not enabled')
+
+    login_payload = {
+        'username': crypto.rsa.encrypt(server_public_key, 'admin'),
+        'password': crypto.rsa.encrypt(server_public_key, 'admin'),
+        'public_key': client_keys.public,
+
+    }
+
+    res = requests.post('http://127.0.0.1:5000/api/login',
+                        json=login_payload)
+    if res:
+        print("Connect successful!")
+        app.session_token = crypto.rsa.decrypt(client_keys.private, res.json()["session_token"])
     else:
         print(res.text)
         raise ConnectionError('Server not enabled')
