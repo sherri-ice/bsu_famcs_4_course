@@ -48,7 +48,7 @@ class DataStore:
         if file_name not in self.__text_store__:
             raise FileNotFoundError(f"No {file_name} file on server")
         text = self.__text_store__[file_name]
-        text_bytes = bytes(text, 'UTF-8')
+        text_bytes = bytearray(text, 'UTF-8')
         encrypted_text = encrypt_aes(text_bytes, session_token)
         return encrypted_text
 
@@ -67,6 +67,7 @@ class DataStore:
 
     @__require_session__
     def delete_file(self, session_token: str, file_name):
+
         if file_name not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, nothing to delete")
 

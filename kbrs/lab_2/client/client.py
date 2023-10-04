@@ -35,7 +35,7 @@ if __name__ == '__main__':
             selected_index = file_listbox.curselection()[0]
             file_name = app.all_files_list[selected_index]
             file_content = text.get("1.0", tk.END)
-            text_bytes = bytes(file_content, 'UTF-8')
+            text_bytes = bytearray(file_content, 'UTF-8')
             encrypted_text = crypto.aes.encrypt(text_bytes, app.session_token)
             payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
                        'file_name': file_name,
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         if file_listbox.curselection():
             selected_index = file_listbox.curselection()[0]
             file_name = app.all_files_list[selected_index]
-            text_bytes = bytes(file_name, 'UTF-8')
+            text_bytes = bytearray(file_name, 'UTF-8')
             encrypted_text = crypto.aes.encrypt(text_bytes, app.session_token)
             payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
                        'file_name': encrypted_text}
