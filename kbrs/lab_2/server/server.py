@@ -43,9 +43,12 @@ def get_file_content():
     session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
 
+    file_content = db.get_file_content(session_token=session_token, file_name=file_name)
+    app.logger.debug(f"Requested: {file_name}, content: {file_content}")
+
     response = {
         "file_name": file_name,
-        "file_content": db.get_file_content(session_token=session_token, file_name=file_name)
+        "file_content": file_content
     }
     return jsonify(response)
 
@@ -75,12 +78,12 @@ def load_file():
     return jsonify(response)
 
 
-@app.route('/api/edit_file', methods=['PATCH'])
+@app.route('/api/edit_file', methods=['POST'])
 def edit_file():
     data = request.get_json()
     session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
     file_name = data.get('file_name')
-    file_content = data.get('new_file_content')
+    file_content = data.get('file_content')
     try:
         db.edit_file(session_token=session_token, file_name=file_name, new_file_content=file_content)
     except ValueError as ex:

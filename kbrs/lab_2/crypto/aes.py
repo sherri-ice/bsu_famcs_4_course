@@ -168,7 +168,8 @@ def decrypt(input_bytes, key):
     :param key: string on KEY_LENGTH size
     :return: decrypted data as list of int's
     """
-    return process(input_bytes, key, decrypt_chunk)
+    decrypted_ints = process(input_bytes, key, decrypt_chunk)
+    return "".join([chr(d_i) for d_i in decrypted_ints])
 
 
 def decrypt_chunk(input_chunk, round_key):

@@ -4,6 +4,7 @@ from crypto.consts import AES_KEY_LENGTH
 from crypto.rsa import encrypt as encrypt_rsa
 from crypto.aes import encrypt as encrypt_aes
 
+
 class DataStore:
 
     def __init__(self):
@@ -63,7 +64,7 @@ class DataStore:
         if file_name not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, use add_file function")
 
-        self.__text_store__[file_name] = ''.join(crypto.aes.decrypt(new_file_content,session_token))
+        self.__text_store__[file_name] = ''.join(crypto.aes.decrypt(new_file_content, session_token))
 
     @__require_session__
     def delete_file(self, session_token: str, file_name):
