@@ -27,7 +27,7 @@ if __name__ == '__main__':
         app.all_files_list = req.json()["all_files_names"]
         file_listbox.delete(0, tk.END)
         for name in app.all_files_list:
-            file_listbox.insert(0, name)
+            file_listbox.insert(tk.END, name)
 
 
     def save_file():
@@ -62,7 +62,9 @@ if __name__ == '__main__':
             encrypted_text = crypto.aes.encrypt(text_bytes, app.session_token)
             payload = {'session_token': crypto.rsa.encrypt(server_public_key, app.session_token),
                        'file_name': encrypted_text}
-            requests.post('http://127.0.0.1:5000/api/delete', json=payload)
+            requests.delete('http://127.0.0.1:5000/api/delete_file', json=payload)
+            update_file_list()
+
 
     def get_file_contents(event):
         if file_listbox.curselection():
@@ -74,7 +76,7 @@ if __name__ == '__main__':
             if res:
                 file_contents = crypto.aes.decrypt(res.json()["file_content"], app.session_token)
                 text.delete('1.0', tk.END)
-                text.insert(tk.END, ''.join(file_contents))
+                text.insert(tk.END, file_contents)
             else:
                 return
 

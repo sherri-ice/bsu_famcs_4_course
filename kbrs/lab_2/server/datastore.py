@@ -64,14 +64,12 @@ class DataStore:
         if file_name not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, use add_file function")
 
-        self.__text_store__[file_name] = ''.join(crypto.aes.decrypt(new_file_content, session_token))
+        self.__text_store__[file_name] = crypto.aes.decrypt(new_file_content, session_token)
 
     @__require_session__
     def delete_file(self, session_token: str, file_name):
-
-        if file_name not in self.__text_store__:
+        file_name_decrypted = crypto.aes.decrypt(file_name, session_token)
+        if file_name_decrypted not in self.__text_store__:
             raise ValueError(f"File {file_name} doesn't exist, nothing to delete")
-
-        file_name_decrypted = ''.join(crypto.aes.decrypt(file_name, session_token))
 
         del self.__text_store__[file_name_decrypted]
