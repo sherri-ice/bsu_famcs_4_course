@@ -23,11 +23,6 @@ class DataStore:
             return encrypted_session_token
         raise ValueError("Only one active session per user")
 
-    def end_session(self, session_token: str):
-        if session_token in self.__active_sessions__:
-            del self.__active_sessions__[session_token]
-        else:
-            raise ValueError("User has already closed the session")
 
     @staticmethod
     def __require_session__(func):
@@ -39,6 +34,14 @@ class DataStore:
                 raise ValueError("Session wasn't started")
 
         return wrapper
+
+    @__require_session__
+    def end_session(self, session_token: str, user_id: str):
+        if user_id in self.__active_sessions__.keys():
+            if session_token == self.__active_sessions__[user_id]:
+                del self.__active_sessions__[user_id]
+            else:
+                raise ValueError("Wrong session token")
 
     @__require_session__
     def get_all_files(self, session_token: str) -> list[str]:

@@ -36,6 +36,18 @@ def login():
     return jsonify(response_data)
 
 
+@app.route('/api/end_session', methods=['POST'])
+def end_session():
+    data = request.get_json()
+    session_token = crypto.rsa.decrypt(server_keys.private, data.get('session_token'))
+    username = data.get('username')
+    try:
+        db.end_session(session_token=session_token, user_id=username)
+    except ValueError as ex:
+        return jsonify({'message': str(ex)}), 401
+    response_data = {"message": "Bye"}
+    return jsonify(response_data)
+
 @app.route('/api/get_file_content', methods=['GET'])
 def get_file_content():
     data = request.get_json()
