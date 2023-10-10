@@ -1,11 +1,10 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication
-
-from interface.interface import MainWindow
+from financial_calc import FinancialCalculator
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    win = MainWindow()
-    win.show()
+    window = FinancialCalculator()
+    window.show()
     sys.exit(app.exec_())
