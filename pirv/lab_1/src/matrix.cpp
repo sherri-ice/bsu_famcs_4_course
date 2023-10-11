@@ -59,14 +59,14 @@ Matrix Matrix::linearMultiply(const Matrix &B, const LaunchMode &launch_mode) {
     int n2 = _m;
     int n3 = B.getM();
 
-    std::vector<int> result(n1 * n3);
+    std::vector<int> result(n1 * n3, 0);
 
 #pragma omp parallel for if (launch_mode == LaunchMode::kParallelOuter)
     for (int i = 0; i < n1; i++) {
 #pragma omp parallel for if (launch_mode == LaunchMode::kParallelInner)
         for (int j = 0; j < n3; j++) {
             for (int k = 0; k < n2; k++) {
-                result[i * n3 + j] += _matrix[i * n2 + k] * B.getMatrix()[i * n3 + j];
+                result[i * n3 + j] += _matrix[i * n2 + k] * B.getMatrix()[k * n3 + j];
             }
         }
     }
