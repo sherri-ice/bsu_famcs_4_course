@@ -19,8 +19,8 @@ private:
     int _n;
     int _m;
     std::vector<int> _matrix;
-    int _random_start = 1;
-    int _random_end = 10;
+    int _random_start = -100;
+    int _random_end = 100;
 
 public:
     Matrix(int n, int m);
