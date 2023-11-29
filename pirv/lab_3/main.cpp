@@ -22,12 +22,12 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
 
     // Get the total number of tasks
-    int num_tasks;
+    int num_tasks = 1;
     MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
 
     // Calculate the number of rows mapped to each process
     // Assumes this divides evenly
-    const int dim = 1 << 10;
+    const int dim = 2;
     const int n_rows = dim / num_tasks;
 
     // Get the task ID
@@ -55,15 +55,21 @@ int main(int argc, char* argv[]) {
     if (task_id == 0) {
         // Create a random number generator
         std::mt19937 mt(123);
-        std::uniform_real_distribution<float> dist(1.0f, 2.0f);
+        std::uniform_real_distribution<float> dist(1.0f, 10.0f);
 
         // Create a matrix
         matrix = std::make_unique<float[]>(dim * dim);
         std::generate(matrix.get(), matrix.get() + dim * dim, [&] { return dist(mt); });
 
+        print_matrix(matrix.get(), dim);
+
         // Create a vector b
         b_vector = std::make_unique<float[]>(dim);
         std::generate(b_vector.get(), b_vector.get() + dim, [&] { return dist(mt); });
+
+        for (int i = 0; i < dim; ++i) {
+            std::cout << b_vector[i] << std::endl;
+        }
     }
 
     // Collect start time in rank 0
@@ -141,8 +147,8 @@ int main(int argc, char* argv[]) {
                 // Remove the pivot
                 for (int col = row; col < dim; col++) {
                     m_chunk[elim_row * dim + col] -= pivot_row[col] * scale;
+                    b_chunk[elim_row] -= pivot_row[col] * scale;
                 }
-                b_chunk[elim_row] -= pivot_row[col] * scale;
             }
         }
     }
@@ -180,6 +186,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Time: " << end - start << " seconds\n";
 
         // Print the result
+        print_matrix(matrix.get(), dim);
         std::cout << "Solution x:\n";
         for (int i = 0; i < dim; i++) {
             std::cout << "x[" << i << "] = " << b_vector[i] << std::endl;
@@ -190,5 +197,4 @@ int main(int argc, char* argv[]) {
     MPI_Finalize();
 
     return 0;
-}
 }
