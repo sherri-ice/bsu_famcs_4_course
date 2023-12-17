@@ -1,6 +1,14 @@
 import math
+import re
+from decimal import Decimal
+from typing import Union
+
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from PyQt5.QtCore import Qt, QSize
+
+
+class ParseError(Exception):
+    pass
 
 
 class FinancialCalculator(QWidget):
@@ -24,7 +32,7 @@ class FinancialCalculator(QWidget):
         self.layout.addWidget(self.value1_input, 1, 1)
 
         self.operation_dropdown = QComboBox()
-        self.operation_dropdown.addItems(["+", "-"])
+        self.operation_dropdown.addItems(["+", "-", "*", "/"])
         self.layout.addWidget(self.operation_dropdown, 1, 2)
 
         self.value2_label = QLabel("Значение 2:")
@@ -42,16 +50,16 @@ class FinancialCalculator(QWidget):
         self.setLayout(self.layout)
 
     def get_input(self, source_name):
-        try:
-            value_str = self.__getattribute__(source_name).text().replace(',', '.')
-            if "e" in value_str:
-                raise ValueError()
-            value = float(self.__getattribute__(source_name).text().replace(',', '.'))
-        except ValueError as exc:
-            value_str = self.__getattribute__(source_name).text().replace(',', '.')
-            if len(value_str) == 0:
-                raise ValueError(f"Проверьте входные числа, невозможно обработать пустое значение.")
-            raise ValueError(f"Невозможно привести значение {value_str} к типу float.")
+        value_str = self.__getattribute__(source_name).text().replace(',', '.')
+        if "e" in value_str:
+            raise ParseError(f"Невозможно ввести экспоненциальное представление.")
+        if len(value_str) == 0:
+            raise ParseError(f"Проверьте входные числа, невозможно обработать пустое значение.")
+        if not re.match(r'^\d+(\s\d{3})*(\.\d+)?$', value_str):
+            raise ParseError(f"Проверьте входные числа на недопустимые символы: {value_str}!")
+        else:
+            value_str = value_str.replace(" ", "")
+        value = Decimal(value_str)
         return value
 
     def calculate(self):
@@ -69,13 +77,23 @@ class FinancialCalculator(QWidget):
                 result = value_1 + value_2
             elif operation == "-":
                 result = value_1 - value_2
+            elif operation == "*":
+                result = value_1 * value_2
+            elif operation == "/":
+                if value_2 == 0:
+                    raise ValueError("Деление на 0 невозможно.")
+                result = value_1 / value_2
+            else:
+                raise ValueError("Неподдерживаемая операция.")
 
             # Another check just to fit task description
-            if result - 1e12 > 0:
+            if result - Decimal(1e12) > 0:
                 raise ArithmeticError("Переполнение: результат больше 1 000 000 000 000.000000")
-            if result + 1e12 < 0:
+            if result + Decimal(1e12) < 0:
                 raise ArithmeticError("Переполнение: результат меньше -1 000 000 000 000.000000")
 
-            self.result_label.setText(f"Результат: {result:.6f}")
-        except (ArithmeticError, ValueError) as exc:
+            result_str = "{:,.6f}".format(result)
+            result_str = result_str.replace(",", " ").rstrip('0').rstrip('.')
+            self.result_label.setText(f"Результат: {result_str}")
+        except (ArithmeticError, ValueError, ParseError) as exc:
             self.result_label.setText(f"Неправильный ввод: {str(exc)}")
