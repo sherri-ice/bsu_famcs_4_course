@@ -1,6 +1,5 @@
 import math
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QComboBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from PyQt5.QtCore import Qt, QSize
 
 
@@ -60,7 +59,7 @@ class FinancialCalculator(QWidget):
             value_1 = self.get_input("value1_input")
             value_2 = self.get_input("value2_input")
             # Check just to fit task description
-            if math.fabs(value_1) > 1e9 or math.fabs(value_2) > 1e9:
+            if math.fabs(value_1) > 1e12 or math.fabs(value_2) > 1e12:
                 raise ArithmeticError(
                     "Переполнение: значения должны быть меньше 1 000 000 000 000.000000 и больше -1 000 000 000 000.000000")
             operation = self.operation_dropdown.currentText()
@@ -72,9 +71,9 @@ class FinancialCalculator(QWidget):
                 result = value_1 - value_2
 
             # Another check just to fit task description
-            if result - 1e9 > 0:
+            if result - 1e12 > 0:
                 raise ArithmeticError("Переполнение: результат больше 1 000 000 000 000.000000")
-            if result + 1e9 < 0:
+            if result + 1e12 < 0:
                 raise ArithmeticError("Переполнение: результат меньше -1 000 000 000 000.000000")
 
             self.result_label.setText(f"Результат: {result:.6f}")
