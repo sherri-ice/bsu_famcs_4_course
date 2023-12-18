@@ -16,10 +16,11 @@ class DataProcessor:
         self.connection.close()
 
     def get_table_names(self):
-        # Query to retrieve table names in the public schema
         query = "SELECT * FROM public_tables_view;"
         self.cursor.execute(query)
-        return self.cursor.fetchall()
+        result = self.cursor.fetchall()
+        filtered_table_names = [tup for tup in result if tup[0] != 'table_names_aliases']
+        return filtered_table_names
 
     def _get_linked_tables_info(self, table_name):
         query = (f"SELECT "
@@ -48,7 +49,8 @@ class DataProcessor:
 
         linked_tables = self._get_linked_tables_info(table_name)
         if len(linked_tables) == 0:
-            return f"SELECT * FROM {table_name};"
+            selected_columns = [col for col in orig_table_cols if not col.endswith("_id")]
+            return f"SELECT {', '.join(selected_columns)} FROM {table_name};"
         joins = []
         selected_columns = orig_table_cols
 
@@ -60,7 +62,7 @@ class DataProcessor:
             joins.append(f"JOIN {table[2]} ON {table_name}.{table[1]} = {table[2]}.{table[3]}")
 
         selected_columns = [col for col in selected_columns if not col.endswith("_id")]
-        base_query = f"SELECT {', '.join(selected_columns)} FROM {table_name} {' '.join(joins)}"
+        base_query = f"SELECT {', '.join(selected_columns)} FROM {table_name} {' '.join(joins)};"
 
         return base_query
 
