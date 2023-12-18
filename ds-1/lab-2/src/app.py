@@ -52,8 +52,10 @@ def add_row(table_name):
             return redirect(url_for('show_table', table_name=table_name))
         else:
             # Display the form for adding a new row
-            column_names = db_proc.get_filtered_columns(table_name)
-            return render_template('add_row.html', table_name=table_name, column_names=column_names)
+            orig_cols, foreign_cols = db_proc.get_filtered_columns(table_name)
+            foreign_keys = db_proc.get_values_for_foreign_keys(foreign_cols)
+            return render_template('add_row.html', table_name=table_name, original_cols=orig_cols,
+                                   foreign_keys=foreign_keys)
 
 
 if __name__ == "__main__":

@@ -9,18 +9,25 @@
 </head>
 <body>
     <h1>Add Row to {{ table_name }}</h1>
+<form method="post" action="{{ url_for('add_row', table_name=table_name) }}">
+    {% for column in original_cols %}
+        <label for="{{ column }}">{{ column }}</label>
+        <input type="text" name="{{ column }}" required><br>
+    {% endfor %}
 
-    <form method="post" action="{{ url_for('add_row', table_name=table_name) }}">
-        {% for column in column_names %}
-            <label for="{{ column }}">{{ column }}</label>
-            {% if 'year' in column.lower() %}
-                <input type="text" name="{{ column }}" class="datepicker" required><br>
-            {% else %}
-                <input type="text" name="{{ column }}" required><br>
-            {% endif %}
-        {% endfor %}
-        <button type="submit">Add Row</button>
-    </form>
+    {% for column, details in foreign_keys.items() %}
+        <label for="{{ column }}">{{ details['alias'] }}</label>
+        <select name="{{ column }}" required>
+            <option value="" disabled selected>Select {{ details['alias'] }}</option>
+            {% for i in range(details['options']|length) %}
+                <option value="{{ details['options'][i] }}">{{ details['alias_options'][i] }}</option>
+            {% endfor %}
+        </select><br>
+    {% endfor %}
+
+    <button type="submit">Add Row</button>
+</form>
+
 
     <br>
     <a href="{{ url_for('index') }}">Back to List of Tables</a>
@@ -31,7 +38,7 @@
             var datepickers = document.querySelectorAll('.datepicker');
             datepickers.forEach(function (datepicker) {
                 flatpickr(datepicker, {
-                    dateFormat: 'Y-m-d',  // Display only the year
+                    dateFormat: 'Y-m-d',  // Display full date (year-month-day)
                     enableTime: false,
                 });
             });
