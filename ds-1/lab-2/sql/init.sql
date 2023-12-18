@@ -1,38 +1,35 @@
 -- Creating the table for music artists
-CREATE TABLE IF NOT EXISTS MusicArtists (
-    ArtistID SERIAL PRIMARY KEY,
-    ArtistName VARCHAR(255) NOT NULL,
-    Country VARCHAR(255) NOT NULL,
-    FormationYear DATE CHECK (FormationYear >= '1900-01-01' AND FormationYear <= CURRENT_DATE),
-    RecordLabel VARCHAR(255)
+CREATE TABLE IF NOT EXISTS music_artists (
+    artist_id SERIAL PRIMARY KEY,
+    artist_name VARCHAR(255) NOT NULL,
+    country VARCHAR(255) NOT NULL,
+    formation_year DATE CHECK (formation_year >= '1900-01-01' AND formation_year <= CURRENT_DATE),
+    record_label VARCHAR(255)
 );
 
--- Creating an index for the ArtistName field in the MusicArtists table
-CREATE INDEX idx_artist_name ON MusicArtists (ArtistName);
+CREATE INDEX idx_artist_name ON music_artists (artist_name);
 
 -- Creating the table for music albums
-CREATE TABLE IF NOT EXISTS MusicAlbums (
-    AlbumID SERIAL PRIMARY KEY,
-    AlbumName VARCHAR(255) NOT NULL,
-    ArtistID SERIAL REFERENCES MusicArtists(ArtistID),
-    ReleaseYear DATE CHECK (ReleaseYear >= '1900-01-01' AND ReleaseYear <= CURRENT_DATE) NOT NULL,
-    Genre VARCHAR(255),
-    Duration DECIMAL(5,2) CHECK (Duration > 0.)
+CREATE TABLE IF NOT EXISTS music_albums (
+    album_id SERIAL PRIMARY KEY,
+    album_name VARCHAR(255) NOT NULL,
+    artist_id SERIAL REFERENCES music_artists(artist_id),
+    release_year DATE CHECK (release_year >= '1900-01-01' AND release_year <= CURRENT_DATE) NOT NULL,
+    genre VARCHAR(255),
+    duration DECIMAL(5,2) CHECK (duration > 0.)
 );
 
--- Creating indexes for fields in the MusicAlbums table
-CREATE INDEX idx_album_name ON MusicAlbums (AlbumName);
-CREATE INDEX idx_release_year ON MusicAlbums (ReleaseYear);
+CREATE INDEX idx_album_name ON music_albums (album_name);
 
 -- Inserting data into the MusicArtists table
-INSERT INTO MusicArtists (ArtistName, Country, FormationYear, RecordLabel)
+INSERT INTO music_artists (artist_name, country, formation_year, record_label)
 VALUES
     ('Artist1', 'USA', '2000-01-01', 'Label1'),
     ('Artist2', 'France', '1995-03-15', 'Label2'),
     ('Artist3', 'Japan', '2005-07-20', 'Label3');
 
 -- Inserting data into the MusicAlbums table
-INSERT INTO MusicAlbums (AlbumName, ReleaseYear, ArtistID, Genre, Duration)
+INSERT INTO music_albums (album_name, release_year, artist_id, Genre, Duration)
 VALUES
     ('Album1', '2002-05-10', 1, 'Hip-Hop', 45.5),
     ('Album2', '1998-11-22', 2, 'Rock', 30.8),
@@ -59,3 +56,13 @@ SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
 
+CREATE TABLE table_names_aliases (
+    table_name VARCHAR(255) NOT NULL,
+    key_column VARCHAR(255) NOT NULL,
+    actual_name_column VARCHAR(255) NOT NULL
+);
+
+INSERT INTO table_names_aliases (table_name, key_column, actual_name_column)
+VALUES
+    ('music_albums', 'album_id', 'album_name'),
+    ('music_artists', 'artist_id', 'artist_name');
