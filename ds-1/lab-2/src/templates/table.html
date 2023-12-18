@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ table_name }}</title>
+</head>
+<body>
+    <h1>{{ table_name }}</h1>
+    <table border="1">
+        <tr>
+            {% for col in table_data[0] %}
+                <th>{{ col.name }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in table_data %}
+            <tr>
+                {% for value in row %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="{{ url_for('index') }}">Back to List of Tables</a>
+</body>
+</html>
