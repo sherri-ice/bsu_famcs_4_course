@@ -40,7 +40,18 @@ class DataProcessor:
 
     def get_filtered_columns(self, table_name):
         orig_table_cols = self.get_table_columns(table_name)
-        return [col for col in orig_table_cols if not col.endswith("_id")]
+        linked_tables = self._get_linked_tables_info(table_name)
+        if len(linked_tables) == 0:
+            return [col for col in orig_table_cols if not col.endswith("_id")]
+
+        selected_columns = orig_table_cols
+        for table in linked_tables:
+            alias = self._get_aliases(table[2])
+            if table[1] in selected_columns:
+                selected_columns.remove(table[1])
+                selected_columns.append(alias[-1])
+
+        return [col for col in selected_columns if not col.endswith("_id")]
 
     def insert_row(self, table_name, column_values):
         # Construct the SQL query with explicitly named columns
