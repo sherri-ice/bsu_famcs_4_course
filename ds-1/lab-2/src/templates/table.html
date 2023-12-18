@@ -22,7 +22,13 @@
             </tr>
         {% endfor %}
     </table>
+
     <br>
     <a href="{{ url_for('index') }}">Back to List of Tables</a>
+
+    <!-- Add Row button -->
+    <a href="{{ url_for('add_row', table_name=table_name) }}">
+        <button>Add Row</button>
+    </a>
 </body>
 </html>

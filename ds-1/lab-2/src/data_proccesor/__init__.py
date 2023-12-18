@@ -32,11 +32,27 @@ class DataProcessor:
         linked_tables_rows = self.cursor.fetchall()
         return linked_tables_rows
 
-    def _get_table_columns(self, table_name):
+    def get_table_columns(self, table_name):
         # Query to retrieve column names for the specified table
         query = f"SELECT column_name FROM information_schema.columns WHERE table_name = %s;"
         self.cursor.execute(query, (table_name,))
         return [col[0] for col in self.cursor.fetchall()]
+
+    def get_filtered_columns(self, table_name):
+        orig_table_cols = self.get_table_columns(table_name)
+        return [col for col in orig_table_cols if not col.endswith("_id")]
+
+    def insert_row(self, table_name, column_values):
+        # Construct the SQL query with explicitly named columns
+        columns = ', '.join(column_values.keys())
+        placeholders = ', '.join(['%s'] * len(column_values))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders});"
+
+        # Execute the query with the provided values
+        self.cursor.execute(query, list(column_values.values()))
+
+        # Commit the transaction
+        self.connection.commit()
 
     def _get_aliases(self, table_name):
         query = (f"SELECT * FROM table_names_aliases "
@@ -45,11 +61,11 @@ class DataProcessor:
         return self.cursor.fetchone()
 
     def _format_sql_query_for_tables(self, table_name):
-        orig_table_cols = self._get_table_columns(table_name)
+        orig_table_cols = self.get_table_columns(table_name)
 
         linked_tables = self._get_linked_tables_info(table_name)
         if len(linked_tables) == 0:
-            selected_columns = [col for col in orig_table_cols if not col.endswith("_id")]
+            selected_columns = self.get_filtered_columns(table_name)
             return f"SELECT {', '.join(selected_columns)} FROM {table_name};"
         joins = []
         selected_columns = orig_table_cols
