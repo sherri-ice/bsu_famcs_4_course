@@ -4,17 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ table_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #555;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            display: block;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
-    <h1>{{ table_name }}</h1>
-    <h2>Data:</h2>
-    <table border="1">
+    <h1>Справочник: {{ table_name }}</h1>
+    <h2>Данные:</h2>
+    <table>
         <tr>
             {% for column in data[0] %}
                 {% if not column.endswith('_id') %}
                     <th>{{ column }}</th>
                 {% endif %}
             {% endfor %}
+            <th>Actions</th>
         </tr>
         {% for row in data %}
             <tr>
@@ -23,21 +85,20 @@
                         <td>{{ value }}</td>
                     {% endif %}
                 {% endfor %}
-                <td>
+                <td class="Действия">
                     {% set id, record_value = row.items() | first %}
-                    <a href="{{ url_for('delete_row', table_name=table_name, row_id=record_value) }}">Delete</a>
-                    <a href="{{ url_for('edit_row', table_name=table_name, record_id=record_value) }}">Edit</a>
+                    <a href="{{ url_for('edit_row', table_name=table_name, record_id=record_value) }}">Редактировать</a>
+                    <a href="{{ url_for('delete_row', table_name=table_name, row_id=record_value) }}">Удалить</a>
                 </td>
             </tr>
         {% endfor %}
     </table>
 
-    <br>
-    <a href="{{ url_for('index') }}">Back to List of Tables</a>
+    <a class="back-link" href="{{ url_for('index') }}">Вернуться к списку справочников</a>
 
     <!-- Add Row button -->
     <a href="{{ url_for('add_row', table_name=table_name) }}">
-        <button>Add Row</button>
+        <button>Добавить запись</button>
     </a>
 </body>
 </html>

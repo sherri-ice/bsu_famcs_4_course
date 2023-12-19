@@ -3,18 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Row - {{ table_name }}</title>
+    <title>Удаление записи - {{ table_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            color: #555;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Delete Row - {{ table_name }}</h1>
+    <h1>Удаление записи - {{ table_name }}</h1>
 
-    <p>U sure?</p>
+    <p>Вы точно хотите удалить запись?</p>
 
     <form method="post" action="{{ url_for('delete_row', table_name=table_name, row_id=row_id) }}">
-        <button type="submit">Yes</button>
+        <button type="submit">Да</button>
     </form>
 
-    <br>
-    <a href="{{ url_for('show_table', table_name=table_name) }}">Return</a>
+    <a href="{{ url_for('show_table', table_name=table_name) }}">Вернуться к справочнику</a>
 </body>
 </html>
