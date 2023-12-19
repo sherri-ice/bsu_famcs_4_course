@@ -48,7 +48,7 @@
 ![img_5.png](images/img_5.png)
 
 - Просмотр данных справочника: 
-[img_6.png](images/img_6.png)
+![img_6.png](images/img_6.png)
 
 - Добавление записи: 
 ![img_7.png](images/img_7.png)
