@@ -82,7 +82,12 @@
             <tr>
                 {% for column, value in row.items() %}
                     {% if not column.endswith('_id') %}
-                        <td>{{ value }}</td>
+                        {% if "year" in column %}
+                            {# Parse the value as a datetime object and format it #}
+                            <td>{{ value.strftime('%d-%m-%Y') }}</td>
+                        {% else %}
+                            <td>{{ value }}</td>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
                 <td class="Действия">

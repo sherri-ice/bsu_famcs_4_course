@@ -95,12 +95,18 @@ class DataProcessor:
 
     def _format_sql_query_for_tables(self, table_name):
         orig_table_cols = self.get_table_columns(table_name)
+        selected_columns = orig_table_cols
+
+        sorting_columns = []
+        for col in selected_columns:
+            if "year" in col:
+                sorting_columns.append(col)
 
         linked_tables = self._get_linked_tables_info(table_name)
         if len(linked_tables) == 0:
             orig_cols, foreign_cols = self.get_filtered_columns(table_name)
             foreign_cols = [item for sublist in foreign_cols.values() for item in sublist]
-            return f"SELECT {', '.join(orig_cols + foreign_cols)} FROM {table_name};"
+            return f"SELECT {', '.join(orig_cols + foreign_cols)} FROM {table_name} ORDER BY {', '.join(sorting_columns)};"
         joins = []
         selected_columns = orig_table_cols
 
@@ -111,7 +117,7 @@ class DataProcessor:
                 selected_columns.append(alias[-1])
             joins.append(f"JOIN {table[2]} ON {table_name}.{table[1]} = {table[2]}.{table[3]}")
 
-        base_query = f"SELECT {', '.join(selected_columns)} FROM {table_name} {' '.join(joins)};"
+        base_query = f"SELECT {', '.join(selected_columns)} FROM {table_name} {' '.join(joins)} ORDER BY {', '.join(sorting_columns)};"
 
         return base_query
 
@@ -171,5 +177,5 @@ class DataProcessor:
         delete_query = f"DELETE FROM {table_name} WHERE {record_col} = %s;"
 
         # Execute the SQL DELETE statement
-        self.cursor.execute(delete_query, (row_id, ))
+        self.cursor.execute(delete_query, (row_id,))
         self.connection.commit()
