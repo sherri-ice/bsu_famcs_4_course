@@ -2,10 +2,10 @@ CREATE TABLE IF NOT EXISTS music_awards (
     record_id SERIAL PRIMARY KEY,
     award_name VARCHAR(255) NOT NULL,
     artist_id SERIAL REFERENCES music_artists(artist_id),
-    date DATE CHECK (date >= '1900-01-01' AND date <= CURRENT_DATE) NOT NULL
+    year DATE CHECK (year >= '1900-01-01' AND year <= CURRENT_DATE) NOT NULL
 );
 
-INSERT INTO music_awards (award_name, artist_id, date)
+INSERT INTO music_awards (award_name, artist_id, year)
 VALUES
     ('Award1', 1, '2000-01-01'),
     ('Award2', 3, '2001-01-01'),
