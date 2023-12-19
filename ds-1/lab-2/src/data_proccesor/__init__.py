@@ -163,3 +163,13 @@ class DataProcessor:
 
         # Commit the transaction
         self.connection.commit()
+
+    def delete_row(self, table_name, row_id):
+        # Generate the SQL DELETE statement
+        alias = self._get_aliases(table_name)
+        record_col = alias[1]
+        delete_query = f"DELETE FROM {table_name} WHERE {record_col} = %s;"
+
+        # Execute the SQL DELETE statement
+        self.cursor.execute(delete_query, (row_id, ))
+        self.connection.commit()

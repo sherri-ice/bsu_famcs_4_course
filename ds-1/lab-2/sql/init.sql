@@ -13,7 +13,7 @@ CREATE INDEX idx_artist_name ON music_artists (artist_name);
 CREATE TABLE IF NOT EXISTS music_albums (
     album_id SERIAL PRIMARY KEY,
     album_name VARCHAR(255) NOT NULL,
-    artist_id SERIAL REFERENCES music_artists(artist_id),
+    artist_id SERIAL REFERENCES music_artists(artist_id) ON DELETE CASCADE,
     release_year DATE CHECK (release_year >= '1900-01-01' AND release_year <= CURRENT_DATE) NOT NULL,
     genre VARCHAR(255),
     duration DECIMAL(5,2) CHECK (duration > 0.)

@@ -82,5 +82,20 @@ def edit_row(table_name, record_id):
                                    foreign_keys=foreign_keys)
 
 
+@app.route('/delete_row/<table_name>/<row_id>', methods=['GET', 'POST'])
+def delete_row(table_name, row_id):
+    # Use the DatabaseHandler as a context manager
+    with DataProcessor(conn_str) as db_proc:
+        if request.method == 'POST':
+            # Delete the row from the specified table
+            db_proc.delete_row(table_name, row_id)
+
+            # Redirect to the table view after deleting the row
+            return redirect(url_for('show_table', table_name=table_name))
+        else:
+            # Render the delete_row.html template for confirmation
+            return render_template('delete_row.html', table_name=table_name, row_id=row_id)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

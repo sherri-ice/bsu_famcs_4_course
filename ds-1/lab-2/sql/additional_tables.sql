@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS music_awards (
     record_id SERIAL PRIMARY KEY,
     award_name VARCHAR(255) NOT NULL,
-    artist_id SERIAL REFERENCES music_artists(artist_id),
+    artist_id SERIAL REFERENCES music_artists(artist_id) ON DELETE CASCADE,
     year DATE CHECK (year >= '1900-01-01' AND year <= CURRENT_DATE) NOT NULL
 );
 
