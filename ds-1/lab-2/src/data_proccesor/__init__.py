@@ -151,8 +151,6 @@ class DataProcessor:
 
     def update_row(self, table_name, row_id, column_values):
         # Construct the SQL query with explicitly named columns
-        columns = ', '.join(column_values.keys())
-        placeholders = ', '.join(['%s'] * len(column_values))
         alias = self._get_aliases(table_name)
         record_col = alias[1]
         set_expr = []
