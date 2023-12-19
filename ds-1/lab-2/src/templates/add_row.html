@@ -11,11 +11,14 @@
     <h1>Add Row to {{ table_name }}</h1>
 <form method="post" action="{{ url_for('add_row', table_name=table_name) }}">
     {% for column in original_cols %}
+        {% if not column.endswith('_id') %}
         <label for="{{ column }}">{{ column }}</label>
         <input type="text" name="{{ column }}" required><br>
+    {% endif %}
     {% endfor %}
 
     {% for column, details in foreign_keys.items() %}
+        {% if not details['alias'].endswith('_id') %}
         <label for="{{ column }}">{{ details['alias'] }}</label>
         <select name="{{ column }}" required>
             <option value="" disabled selected>Select {{ details['alias'] }}</option>
@@ -23,6 +26,7 @@
                 <option value="{{ details['options'][i] }}">{{ details['alias_options'][i] }}</option>
             {% endfor %}
         </select><br>
+    {% endif %}
     {% endfor %}
 
     <button type="submit">Add Row</button>

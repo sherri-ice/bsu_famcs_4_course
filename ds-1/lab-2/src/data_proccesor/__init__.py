@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import psycopg2
+from psycopg2 import sql
 
 
 class DataProcessor:
@@ -130,3 +131,37 @@ class DataProcessor:
             data.append(cur_data)
 
         return data
+
+    def get_row(self, table_name, row_id):
+        alias = self._get_aliases(table_name)
+        record_col = alias[1]
+
+        query = f"SELECT {', '.join(self.get_filtered_columns(table_name)[0])} FROM {table_name} WHERE {record_col} = %s;"
+
+        self.cursor.execute(query, (row_id,))
+        row_data = self.cursor.fetchone()
+
+        # Fetch the column names from the cursor description
+        columns = [desc[0] for desc in self.cursor.description]
+        cur_data = {}
+        for i in range(len(columns)):
+            cur_data[columns[i]] = row_data[i]
+
+        return cur_data
+
+    def update_row(self, table_name, row_id, column_values):
+        # Construct the SQL query with explicitly named columns
+        columns = ', '.join(column_values.keys())
+        placeholders = ', '.join(['%s'] * len(column_values))
+        alias = self._get_aliases(table_name)
+        record_col = alias[1]
+        set_expr = []
+        for col, val in column_values.items():
+            set_expr.append(f"{col}='{val}'")
+
+        query = f"UPDATE {table_name} SET {', '.join(set_expr)} WHERE {record_col} = %s;"
+
+        self.cursor.execute(query, (row_id,))
+
+        # Commit the transaction
+        self.connection.commit()

@@ -1,19 +1,31 @@
-<!-- edit_row.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Row in {{ table_name }}</title>
+    <title>Edit Row - {{ table_name }}</title>
 </head>
 <body>
-    <h1>Edit Row in {{ table_name }}</h1>
+    <h1>Edit Row - {{ table_name }}</h1>
 
-    <form method="post" action="{{ url_for('edit_row', table_name=table_name, row_id=row_id) }}">
-        {% for column, value in zip(column_names, row_data) %}
-            <label for="{{ column }}">{{ column }}</label>
-            <input type="text" name="{{ column }}" value="{{ value }}" required><br>
+    <form method="post" action="{{ url_for('edit_row', table_name=table_name, record_id=record_id) }}">
+        {% for column, value in row.items() %}
+            {% if not column.endswith('_id') %}
+                <label for="{{ column }}">{{ column }}</label>
+                <input type="text" name="{{ column }}" value="{{ value }}" required><br>
+            {% endif %}
         {% endfor %}
+        {% for column, details in foreign_keys.items() %}
+        {% if not details['alias'].endswith('_id') %}
+        <label for="{{ column }}">{{ details['alias'] }}</label>
+        <select name="{{ column }}" required>
+            <option value="" disabled selected>Select {{ details['alias'] }}</option>
+            {% for i in range(details['options']|length) %}
+                <option value="{{ details['options'][i] }}">{{ details['alias_options'][i] }}</option>
+            {% endfor %}
+        </select><br>
+    {% endif %}
+    {% endfor %}
         <button type="submit">Save Changes</button>
     </form>
 

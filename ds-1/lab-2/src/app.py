@@ -57,5 +57,30 @@ def add_row(table_name):
                                    foreign_keys=foreign_keys)
 
 
+@app.route('/edit_row/<table_name>/<int:record_id>', methods=['GET', 'POST'])
+def edit_row(table_name, record_id):
+    # Use the DatabaseHandler as a context manager
+    with DataProcessor(conn_str) as db_proc:
+        if request.method == 'POST':
+            # Extract updated column values from the form submission
+            updated_values = {column: request.form[column] for column in request.form}
+
+            # Update the row in the specified table
+            db_proc.update_row(table_name, record_id, updated_values)
+
+            # Redirect to the table view after updating the row
+            return redirect(url_for('show_table', table_name=table_name))
+        else:
+            # Fetch the original row data for editing
+            original_row = db_proc.get_row(table_name, record_id)
+            foreign_cols = db_proc.get_filtered_columns(table_name)[1]
+            print(table_name)
+            foreign_keys = db_proc.get_values_for_foreign_keys(foreign_cols)
+
+            # Render the edit_row.html template with the original row data
+            return render_template('edit_row.html', table_name=table_name, record_id=record_id, row=original_row,
+                                   foreign_keys=foreign_keys)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
