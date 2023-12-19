@@ -10,14 +10,18 @@
     <h2>Data:</h2>
     <table border="1">
         <tr>
-            {% for col in column_names %}
-                <th>{{ col }}</th>
+            {% for column in data[0] %}
+                {% if not column.endswith('_id') %}
+                    <th>{{ column }}</th>
+                {% endif %}
             {% endfor %}
         </tr>
-        {% for row in table_data %}
+        {% for row in data %}
             <tr>
-                {% for value in row %}
-                    <td>{{ value }}</td>
+                {% for column, value in row.items() %}
+                    {% if not column.endswith('_id') %}
+                        <td>{{ value }}</td>
+                    {% endif %}
                 {% endfor %}
             </tr>
         {% endfor %}

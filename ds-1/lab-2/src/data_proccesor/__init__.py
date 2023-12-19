@@ -63,17 +63,16 @@ class DataProcessor:
         orig_table_cols = self.get_table_columns(table_name)
         linked_tables = self._get_linked_tables_info(table_name)
         if len(linked_tables) == 0:
-            return [col for col in orig_table_cols if not col.endswith("_id")], {}
+            return orig_table_cols, {}
 
         foreign_keys = defaultdict(list)
         for table in linked_tables:
             alias = self._get_aliases(table[2])
             if table[1] in orig_table_cols:
                 orig_table_cols.remove(table[1])
-                if not alias[-1].endswith("_id"):
-                    foreign_keys[table[-2]].append(alias[-1])
+                foreign_keys[table[-2]].append(alias[-1])
 
-        return [col for col in orig_table_cols if not col.endswith("_id")], foreign_keys
+        return orig_table_cols, foreign_keys
 
     def insert_row(self, table_name, column_values):
         # Construct the SQL query with explicitly named columns
@@ -111,7 +110,6 @@ class DataProcessor:
                 selected_columns.append(alias[-1])
             joins.append(f"JOIN {table[2]} ON {table_name}.{table[1]} = {table[2]}.{table[3]}")
 
-        selected_columns = [col for col in selected_columns if not col.endswith("_id")]
         base_query = f"SELECT {', '.join(selected_columns)} FROM {table_name} {' '.join(joins)};"
 
         return base_query
@@ -124,5 +122,11 @@ class DataProcessor:
         # Fetch all rows and column names
         table_data = self.cursor.fetchall()
         column_names = [desc[0] for desc in self.cursor.description]
+        data = []
+        for row in table_data:
+            cur_data = {}
+            for i in range(len(column_names)):
+                cur_data[column_names[i]] = row[i]
+            data.append(cur_data)
 
-        return table_data, column_names
+        return data

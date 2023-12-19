@@ -27,12 +27,11 @@ def show_table(table_name):
     # Use the DatabaseHandler as a context manager
     with DataProcessor(conn_str) as db_proc:
         # Get data and column names from the specified table
-        table_data, column_names = db_proc.get_table_data(table_name)
+        data = db_proc.get_table_data(table_name)
 
-        if table_data is not None:
+        if len(data) > 0:
             # Render the template with the table data and column names
-            return render_template('table.html', table_name=table_name, table_data=table_data,
-                                   column_names=column_names)
+            return render_template('table.html', table_name=table_name, data=data)
         else:
             return f"Error retrieving data from {table_name}."
 
