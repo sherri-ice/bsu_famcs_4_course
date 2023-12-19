@@ -1,0 +1,23 @@
+<!-- edit_row.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Row in {{ table_name }}</title>
+</head>
+<body>
+    <h1>Edit Row in {{ table_name }}</h1>
+
+    <form method="post" action="{{ url_for('edit_row', table_name=table_name, row_id=row_id) }}">
+        {% for column, value in zip(column_names, row_data) %}
+            <label for="{{ column }}">{{ column }}</label>
+            <input type="text" name="{{ column }}" value="{{ value }}" required><br>
+        {% endfor %}
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('show_table', table_name=table_name) }}">Back to {{ table_name }}</a>
+</body>
+</html>
