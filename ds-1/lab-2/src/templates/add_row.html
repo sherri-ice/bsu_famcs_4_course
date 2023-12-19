@@ -13,7 +13,11 @@
     {% for column in original_cols %}
         {% if not column.endswith('_id') %}
         <label for="{{ column }}">{{ column }}</label>
-        <input type="text" name="{{ column }}" required><br>
+        {% if 'year' in column.lower() %}
+                <input type="text" name="{{ column }}" class="datepicker" required><br>
+            {% else %}
+                <input type="text" name="{{ column }}" required><br>
+        {% endif %}
     {% endif %}
     {% endfor %}
 

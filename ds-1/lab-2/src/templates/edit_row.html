@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Row - {{ table_name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
     <h1>Edit Row - {{ table_name }}</h1>
@@ -12,9 +14,14 @@
         {% for column, value in row.items() %}
             {% if not column.endswith('_id') %}
                 <label for="{{ column }}">{{ column }}</label>
-                <input type="text" name="{{ column }}" value="{{ value }}" required><br>
+                {% if 'year' in column.lower() %}
+                    <input type="text" name="{{ column }}" class="datepicker" required><br>
+                {% else %}
+                    <input type="text" name="{{ column }}" value="{{ value }}" required><br>
+                {% endif %}
             {% endif %}
         {% endfor %}
+
         {% for column, details in foreign_keys.items() %}
         {% if not details['alias'].endswith('_id') %}
         <label for="{{ column }}">{{ details['alias'] }}</label>
@@ -31,5 +38,17 @@
 
     <br>
     <a href="{{ url_for('show_table', table_name=table_name) }}">Back to {{ table_name }}</a>
+    <script>
+        // Initialize datepickers for columns with 'year' in their name
+        document.addEventListener('DOMContentLoaded', function () {
+            var datepickers = document.querySelectorAll('.datepicker');
+            datepickers.forEach(function (datepicker) {
+                flatpickr(datepicker, {
+                    dateFormat: 'Y-m-d',  // Display full date (year-month-day)
+                    enableTime: false,
+                });
+            });
+        });
+    </script>
 </body>
 </html>
